@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Update package lists
+sudo apt update
+
+# Check if Python is installed
+if ! command -v python3 &> /dev/null; then
+    echo "Installing Python..."
+    sudo apt install -y python3
+else
+    echo "Python is already installed. Version: $(python3 --version)"
+fi
+
+# Check if pip is installed
+if ! command -v pip3 &> /dev/null; then
+    echo "Installing pip..."
+    sudo apt install -y python3-pip
+else
+    echo "pip is already installed. Version: $(pip3 --version)"
+fi
+
+# Check if Django is installed
+if ! command -v django-admin &> /dev/null; then
+    echo "Installing Django..."
+    pip3 install django
+else
+    echo "Django is already installed. Version: $(django-admin --version)"
+fi
+
+# Check if PostgreSQL is installed
+if ! command -v psql &> /dev/null; then
+    echo "Installing PostgreSQL..."
+    sudo apt install -y postgresql postgresql-contrib
+else
+    echo "PostgreSQL is already installed. Version: $(psql --version)"
+fi
+
+# Check if Git is installed
+if ! command -v git &> /dev/null; then
+    echo "Installing Git..."
+    sudo apt install -y git
+else
+    echo "Git is already installed. Version: $(git --version)"
+fi
+
+# Clone the Django project repository
+if [ ! -d "requirement" ]; then
+    git clone https://github.com/rajath-optit/requirement.git
+fi
+
+# Install or update project dependencies
+cd requirement
+pip3 install --upgrade -r requirements.txt
+
+# Perform database migrations
+python3 manage.py migrate
+
+# Create a superuser for Django admin (non-interactive)
+echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'adminpassword')" | python3 manage.py shell
+
+# Run the Django development server
+python3 manage.py runserver
